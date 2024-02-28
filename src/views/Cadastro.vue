@@ -7,7 +7,7 @@
       <label for="email"></label>
       <input name="email" id="email" placeholder="Email" v-model="cliente.email">
 
-      <button :disabled="!cliente.nome || !cliente.email" type="button" @click="adicionarCliente(cliente)">Cadastrar cliente</button>
+      <button :disabled="!cliente.nome || !cliente.email" type="button" @click="adicionarClienteLista(cliente)">Cadastrar cliente</button>
 
     </form>
     <table>
@@ -24,9 +24,14 @@
           <td>{{ cliente.nome }}</td>
           <td>{{ cliente.email }}</td>
           <td>
-            <i class="fa-solid fa-trash-can"></i>
-            <i class="fa-solid fa-user-pen"></i>
+            <button @click="atualizarCliente(cliente)">
+              <i class="fa-solid fa-user-pen"></i> Editar
+            </button>
+            <button @click="deletarCliente(cliente)">
+              <i class="fa-solid fa-trash-can"></i> Excluir
+            </button>
           </td>
+
         </tr>
       </tbody>
 
@@ -43,7 +48,7 @@ const cliente = ref({
 //Lista reativa porque precisa atualizar em todos os lugares que ela aparece, ou para quem precisar dela;
 const lista = reactive([]);
 
-function adicionarCliente(cliente) {
+function adicionarClienteLista(cliente) {
   lista.push(cliente)
   this.cliente = {
     nome: '',
@@ -51,9 +56,38 @@ function adicionarCliente(cliente) {
   }
 }
 
+function atualizarCliente(cliente) {
+
+}
+function deletarCliente(cliente) {
+  const index = lista.indexOf(cliente);
+  if (index !== -1) {
+    lista.splice(index, 1);
+  }
+}
+
+
+
 </script>
 <style>
-.izar {
-  background-color: blue;
+button {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  color: #333;
+  font-size: 16px;
+  padding: 5px 10px;
+  transition: background-color 0.3s ease;
+}
+
+button i {
+  margin-right: 5px;
+
+}
+
+
+button:hover {
+  background-color: red;
+
 }
 </style>
