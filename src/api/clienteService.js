@@ -4,8 +4,8 @@ const baseURL = 'http://localhost:8080/cliente';
 export function adicionarCliente(cliente) {
   return api.post(baseURL, cliente);
 }
-export function deletarCliente(cliente) {
-  return api.delete(baseURL, cliente);
+export function deletarCliente(id) {
+  return api.delete(`${baseURL}?id=${id}`);
 }
 
 export function atualizarCliente(cliente) {
