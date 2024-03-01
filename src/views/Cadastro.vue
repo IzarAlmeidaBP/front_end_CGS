@@ -1,73 +1,66 @@
 <template>
-  <div class="container">
-    <form id="cadatro-form">
-      <label for="nome"></label>
-      <input name="nome" type="text" placeholder="Nome" v-model="cliente.nome">
-
-      <label for="email"></label>
-      <input name="email" id="email" placeholder="Email" v-model="cliente.email">
-
-      <button :disabled="!cliente.nome || !cliente.email" type="button" @click="adicionarClienteLista(cliente)">Cadastrar cliente</button>
-
+  <main>
+    <form action="">
+      <input type="text" v-model="cliente.email" placeholder="Email">
+      <input type="text" v-model="cliente.nome" placeholder="Nome">
+      <button @click.prevent="adicionarCliente(cliente)">Adicionar</button>
     </form>
+
     <table>
       <thead>
         <tr>
-          <th>ID</th>
-          <th>Nome</th>
           <th>Email</th>
+          <th>Nome</th>
+          <th>Ações</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="cliente in lista">
-          <td>{{ lista.indexOf(cliente) }}</td>
-          <td>{{ cliente.nome }}</td>
-          <td>{{ cliente.email }}</td>
+        <tr v-for="(item, index) in list" :key="item.email">
+          <td>{{ item.email }}</td>
+          <td>{{ item.nome }}</td>
           <td>
-            <button @click="atualizarCliente(cliente)">
-              <i class="fa-solid fa-user-pen"></i> Editar
-            </button>
-            <button @click="deletarCliente(cliente)">
-              <i class="fa-solid fa-trash-can"></i> Excluir
-            </button>
+            <button @click="editarCliente(index)">Editar</button>
+            <button @click="excluirCliente(index)">Excluir</button>
           </td>
-
         </tr>
       </tbody>
-
     </table>
-  </div>
+  </main>
 </template>
+
 <script setup>
-import { ref, reactive } from 'vue';
+import { reactive, ref } from 'vue'
+
 const cliente = ref({
-  nome: '',
-  email: ''
+  email: '',
+  nome: ''
 })
 
-//Lista reativa porque precisa atualizar em todos os lugares que ela aparece, ou para quem precisar dela;
-const lista = reactive([]);
+const list = reactive([]);
 
-function adicionarClienteLista(cliente) {
-  lista.push(cliente)
-  this.cliente = {
-    nome: '',
-    email: ''
+function adicionarCliente(novoCliente) {
+  console.log(novoCliente)
+  list.push({ ...novoCliente })
+  cliente.value.email = ''
+  cliente.value.nome = ''
+}
+
+function editarCliente(index) {
+  const novoNome = prompt("Digite o novo nome:")
+  if (novoNome !== null) {
+    list[index].nome = novoNome
+  }
+  const novoEmail = prompt("Digite o novo email:")
+  if (novoEmail !== null) {
+    list[index].nome = novoEmail
   }
 }
 
-function atualizarCliente(cliente) {
-
-}
-function deletarCliente(cliente) {
-  const index = lista.indexOf(cliente);
-  if (index !== -1) {
-    lista.splice(index, 1);
+function excluirCliente(index) {
+  if (confirm("Tem certeza que deseja excluir este cliente?")) {
+    list.splice(index, 1)
   }
 }
-
-
-
 </script>
 <style>
 button {
