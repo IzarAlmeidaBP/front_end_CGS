@@ -3,7 +3,7 @@
     <form action="">
       <input type="text" v-model="cliente.email" placeholder="Email">
       <input type="text" v-model="cliente.nome" placeholder="Nome">
-      <button @click.prevent="adicionarCliente(cliente)">Adicionar</button>
+      <button @click.prevent="adicionarNovoCliente(cliente)">Adicionar</button>
     </form>
 
     <table>
@@ -29,7 +29,17 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { reactive, ref, onBeforeMount } from 'vue'
+import { adicionarCliente, deletarCliente, atualizarCliente, listarCliente } from '../api/clienteService';
+onBeforeMount(async () => {
+  const response = await listarCliente();
+  const listaCliente = await response.data
+  listaCliente.forEach((cliente) => {
+    list.push(cliente);
+  });
+});
+
+
 
 const cliente = ref({
   email: '',
@@ -38,21 +48,22 @@ const cliente = ref({
 
 const list = reactive([]);
 
-function adicionarCliente(novoCliente) {
-  console.log(novoCliente)
-  list.push({ ...novoCliente })
+async function adicionarNovoCliente(novoCliente) {
+  adicionarCliente({ ...novoCliente })
   cliente.value.email = ''
   cliente.value.nome = ''
+
 }
 
+
 function editarCliente(index) {
+  const novoEmail = prompt("Digite o novo email:")
+  if (novoEmail !== null) {
+    list[index].email = novoEmail
+  }
   const novoNome = prompt("Digite o novo nome:")
   if (novoNome !== null) {
     list[index].nome = novoNome
-  }
-  const novoEmail = prompt("Digite o novo email:")
-  if (novoEmail !== null) {
-    list[index].nome = novoEmail
   }
 }
 
