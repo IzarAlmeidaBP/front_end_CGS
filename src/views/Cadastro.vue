@@ -1,52 +1,60 @@
 <template>
   <main>
-    A quantidade de itens na lista é:{{ list.length }}
     <label for="filtrar-tabela"></label>
-    <input type="search" name="filtro" id="filtrar-tabela" placeholder="Digite o nome do cliente" />
-    <table class="tabela-clientes">
-      <thead>
-        <tr class="cabeca-tabela">
-          <th>ID</th>
-          <th>Email</th>
-          <th>Nome</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr class="corpo-tabela" v-for="item in list" :key="item.id">
-          <td>{{ item.id }}</td>
-          <td>{{ item.email }}</td>
-          <td>{{ item.nome }}</td>
-          <td class="butoes">
-            <button id="butao-editar" @click="editarCliente(index)">Editar</button>
-            <button id="butao-excluir" @click="excluirCliente(item)">Excluir</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <form action="">
-      <input type="text" v-model="cliente.email" placeholder="Email">
-      <input type="text" v-model="cliente.nome" placeholder="Nome">
+    <input type="search" name="filtro" id="filtrar-tabela" placeholder="Digite o nome do cliente" v-model="campoPesquisa" />
+    <div class="tabela-clientes">
+      <table>
+        <thead>
+          <tr class="cabeca-tabela">
+            <th>ID</th>
+            <th>Nome</th>
+            <th>Email</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="corpo-tabela" v-for="item in list" :key="item.id">
+            <td>{{ item.id }}</td>
+            <td>{{ item.nome }}</td>
+            <td>{{ item.email }}</td>
+            <td class="butoes">
+              <button id="butao-editar" @click="passarDadosCliente(item)">Editar</button>
+              <button id="butao-excluir" @click="excluirCliente(item)">Excluir</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <form action="" class="form-cliente">
+      <input type="text" v-model="cliente.nome" placeholder="Nome" required>
+      <input type="text" v-model="cliente.email" placeholder="Email" required>
       <button id="butao-adicionar" @click.prevent="adicionarNovoCliente(cliente)">Adicionar</button>
     </form>
-
+    <ModalEditarCliente v-if="abrirModal" @editarCliente="editarCliente" :clienteEdicao="clienteEdicao" />
   </main>
 </template>
 
 <script setup>
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, onMounted, watch } from 'vue'
 import { adicionarCliente, deletarCliente, atualizarCliente, listarCliente } from '../api/clienteService';
 import 'bootstrap/dist/css/bootstrap.css';
+import ModalEditarCliente from './ModalEditarCliente.vue';
 onMounted(async () => {
   await atualizarLista();
 });
 
+const clienteEdicao = ref({
+  id: '',
+  email: '',
+  nome: ''
+})
 const campoPesquisa = ref('');
 
 const cliente = ref({
   email: '',
   nome: ''
 })
+const abrirModal = ref(false);
 
 
 const list = reactive([]);
@@ -58,6 +66,18 @@ async function adicionarNovoCliente(novoCliente) {
   atualizarLista();
 }
 
+function filtrarClientes(filtro) {
+  const listaFiltrada = list.filter((cliente) => {
+    return cliente.nome.toUpperCase().startsWith(filtro.toUpperCase());
+  });
+
+  list.splice(0, list.length);
+
+  listaFiltrada.forEach((cliente) => {
+    list.push(cliente);
+  });
+}
+
 
 async function atualizarLista() {
   const response = await listarCliente();
@@ -67,16 +87,6 @@ async function atualizarLista() {
     list.push(cliente)
   })
 }
-function editarCliente(index) {
-  const novoEmail = prompt("Digite o novo email:")
-  if (novoEmail !== null) {
-    list[index].email = novoEmail
-  }
-  const novoNome = prompt("Digite o novo nome:")
-  if (novoNome !== null) {
-    list[index].nome = novoNome
-  }
-}
 
 async function excluirCliente(cliente) {
   if (confirm("Tem certeza que deseja excluir este cliente?")) {
@@ -85,11 +95,53 @@ async function excluirCliente(cliente) {
     await atualizarLista();
   }
 }
+async function editarCliente(clienteModal) {
+  try {
+    await atualizarCliente(clienteModal);
+    atualizarLista();
+    abrirFecharModal();
+  } catch (error) {
+    console.error('Erro ao atualizar cliente:', error);
+  }
+
+}
+function passarDadosCliente(cliente) {
+  clienteEdicao.value.id = cliente.id;
+  clienteEdicao.value.email = cliente.email;
+  clienteEdicao.value.nome = cliente.nome;
+  abrirFecharModal()
+
+}
+
+const abrirFecharModal = () => {
+  abrirModal.value = !abrirModal.value;
+};
+
+watch(
+  () => campoPesquisa.value,
+  (novoValor, valorAntigo) => {
+    if (novoValor === '') {
+      atualizarLista();
+    } else {
+      filtrarClientes(novoValor)
+    }
+  }
+);
 </script>
+
 <style>
+* {
+  box-sizing: border-box;
+}
+
 .tabela-clientes {
-  width: 40%;
+  display: flex;
+  align-content: center;
+  justify-content: center;
+
+  width: 50%;
   border-collapse: collapse;
+  margin: 0 auto;
 }
 
 .cabeca-tabela th,
@@ -144,10 +196,19 @@ async function excluirCliente(cliente) {
 }
 
 #filtrar-tabela {
+
   width: 200px;
   height: 35px;
   padding: 5px;
   margin-bottom: 10px;
   display: block;
+}
+
+.form-cliente {
+  gap: 0.5rem;
+  padding: 1rem;
+  display: flex;
+  align-content: center;
+  justify-content: center;
 }
 </style>
