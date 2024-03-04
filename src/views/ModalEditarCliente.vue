@@ -1,21 +1,20 @@
 <template>
   <div class="modal">
-    <div class="modal-content">
+    <div class="modal-content text-center">
+      <button class="close-btn" @click="$emit('fechar')">Fechar</button>
       <h2>Editar Cliente</h2>
 
-      <div>
-        <label for="nome">Nome:</label>
-        <input type="text" id="nome" v-model="cliente.nome" required>
+      <div class="mb-3">
+        <label for="nome"></label>
+        <input type="text" id="nome" v-model="cliente.nome" placeholder="nome" required>
+      </div>
+      <div class="mb-3">
+        <label for="email"></label>
+        <input type="email" id="email" v-model="cliente.email" placeholder="email" required>
       </div>
       <div>
-        <label for="email">Email:</label>
-        <input type="email" id="email" v-model="cliente.email" required>
+        <button @click="$emit('editarCliente', cliente)">Enviar</button>
       </div>
-      <div>
-        <button @click="$emit('editarCliente', cliente);
-        ">Enviar</button>
-      </div>
-
     </div>
   </div>
 </template>
@@ -70,22 +69,42 @@ const enviarDetalhes = () => {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-input {
-  width: 100%;
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
   padding: 8px;
-  margin-bottom: 10px;
-}
-
-button {
-  padding: 8px 16px;
-  background-color: #007bff;
+  background-color: #6c757d;
+  /* Cor cinza */
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
 }
 
+.close-btn:hover {
+  background-color: #343a40;
+  /* Cor cinza mais escura */
+}
+
+button {
+  background-color: #0d6efd;
+  /* Cor azul */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
 button:hover {
-  background-color: #0056b3;
+  background-color: #0b5ed7;
+
+}
+
+input {
+  width: 40%;
+  padding: 8px;
+  margin-bottom: 10px;
 }
 </style>

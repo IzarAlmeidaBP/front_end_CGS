@@ -1,38 +1,59 @@
 <template>
-  <main>
-    <label for="filtrar-tabela"></label>
-    <input type="search" name="filtro" id="filtrar-tabela" placeholder="Digite o nome do cliente" v-model="campoPesquisa" />
-    <div class="tabela-clientes">
-      <table>
-        <thead>
-          <tr class="cabeca-tabela">
-            <th>ID</th>
-            <th>Nome</th>
-            <th>Email</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr class="corpo-tabela" v-for="item in list" :key="item.id">
-            <td>{{ item.id }}</td>
-            <td>{{ item.nome }}</td>
-            <td>{{ item.email }}</td>
-            <td class="butoes">
-              <button id="butao-editar" @click="passarDadosCliente(item)">Editar</button>
-              <button id="butao-excluir" @click="excluirCliente(item)">Excluir</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+  <main class="container mt-4">
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label for="filtrar-tabela" class="visually-hidden">Pesquisar Cliente</label>
+        <input type="search" class="form-control" id="filtrar-tabela" placeholder="Digite o nome do cliente" v-model="campoPesquisa">
+      </div>
     </div>
-    <form action="" class="form-cliente">
-      <input type="text" v-model="cliente.nome" placeholder="Nome" required>
-      <input type="text" v-model="cliente.email" placeholder="Email" required>
-      <button id="butao-adicionar" @click.prevent="adicionarNovoCliente(cliente)">Adicionar</button>
-    </form>
+    <div class="row mb-3">
+      <div class="col-md-12">
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="item in list" :key="item.id">
+                <td>{{ item.id }}</td>
+                <td>{{ item.nome }}</td>
+                <td>{{ item.email }}</td>
+                <td>
+                  <button class="btn btn-primary me-2" @click="passarDadosCliente(item)">Editar</button>
+                  <button class="btn btn-danger" @click="excluirCliente(item)">Excluir</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <form class="row g-3" @submit.prevent="adicionarNovoCliente(cliente)">
+          <div class="col-md-6">
+            <label for="nome" class="form-label">Nome</label>
+            <input type="text" class="form-control" id="nome" v-model="cliente.nome" required>
+          </div>
+          <div class="col-md-6">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" v-model="cliente.email" required>
+          </div>
+          <div class="col-12">
+            <button type="submit" class="btn btn-primary">Adicionar</button>
+          </div>
+        </form>
+      </div>
+    </div>
     <ModalEditarCliente v-if="abrirModal" @editarCliente="editarCliente" :clienteEdicao="clienteEdicao" />
   </main>
 </template>
+
 
 <script setup>
 import { reactive, ref, onMounted, watch } from 'vue'
@@ -60,11 +81,24 @@ const abrirModal = ref(false);
 const list = reactive([]);
 
 async function adicionarNovoCliente(novoCliente) {
+  const emailExistente = list.some(cliente => cliente.email === novoCliente.email);
+
+  if (emailExistente) {
+    alert('Este email já está cadastrado.');
+    return;
+  }
+
+  if (!novoCliente.nome || !novoCliente.email) {
+    alert('Por favor, preencha todos os campos.');
+    return;
+  }
+
   await adicionarCliente({ ...novoCliente });
   cliente.value.email = '';
   cliente.value.nome = '';
   atualizarLista();
 }
+
 
 function filtrarClientes(filtro) {
   const listaFiltrada = list.filter((cliente) => {
@@ -83,10 +117,12 @@ async function atualizarLista() {
   const response = await listarCliente();
   list.splice(0, list.length);
   const listaCliente = await response.data;
-  listaCliente.map((cliente) => {
-    list.push(cliente)
-  })
+  listaCliente.sort((a, b) => a.id - b.id);
+  listaCliente.forEach((cliente) => {
+    list.push(cliente);
+  });
 }
+
 
 async function excluirCliente(cliente) {
   if (confirm("Tem certeza que deseja excluir este cliente?")) {
@@ -134,14 +170,20 @@ watch(
   box-sizing: border-box;
 }
 
-.tabela-clientes {
-  display: flex;
-  align-content: center;
-  justify-content: center;
+body {
+  background-color: #f0f0f0;
+}
 
-  width: 50%;
-  border-collapse: collapse;
+.container {
+  max-width: 1000px;
   margin: 0 auto;
+  padding: 20px;
+}
+
+.tabela-clientes {
+  width: 100%;
+  margin-bottom: 20px;
+  overflow-x: auto;
 }
 
 .cabeca-tabela th,
@@ -154,61 +196,40 @@ watch(
   background-color: #f2f2f2;
 }
 
-
-#butao-editar,
-#butao-excluir {
-  background-color: black;
+.btn {
+  background-color: #007bff;
   color: white;
   border: none;
   border-radius: 5px;
-  padding: 5px 10px;
+  padding: 8px 16px;
   cursor: pointer;
-
 }
 
-#butao-excluir {
+.btn-danger {
   background-color: red;
 }
 
-#butao-editar {
-  background-color: black;
-  margin-right: 10px;
-  margin-left: 10px;
-}
-
-#butao-editar:hover,
-#butao-excluir:hover {
+.btn:hover {
   filter: brightness(80%);
 }
 
-#butao-adicionar {
-  background-color: blue;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 8px 16px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-#butao-adicionar:hover {
-  background-color: darkblue;
-}
-
 #filtrar-tabela {
-
-  width: 200px;
+  width: 100%;
+  max-width: 300px;
   height: 35px;
   padding: 5px;
-  margin-bottom: 10px;
-  display: block;
+  margin-bottom: 20px;
 }
 
 .form-cliente {
-  gap: 0.5rem;
-  padding: 1rem;
   display: flex;
-  align-content: center;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+  }
 }
 </style>
